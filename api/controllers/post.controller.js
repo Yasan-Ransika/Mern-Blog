@@ -82,3 +82,30 @@ export const create = async (req, res, next) => {
     }
   };
   
+  export const updatepost = async (req, res, next) => {
+    console.log('Received Post ID:', req.params.postId); 
+    console.log('Received User ID:', req.params.userId); 
+    if (!req.params.postId || !req.params.userId) {
+      return next(errorHandler(400, 'Post ID or User ID not provided'));
+    }
+    if (!req.user.isAdmin || req.user.id !== req.params.userId) {
+      return next(errorHandler(403, 'You are not allowed to update this post'));
+    }
+    try {
+      const updatedPost = await Post.findByIdAndUpdate(
+        req.params.postId,
+        {
+          $set: {
+            title: req.body.title,
+            content: req.body.content,
+            category: req.body.category,
+            image: req.body.image,
+          },
+        },
+        { new: true }
+      );
+      res.status(200).json(updatedPost);
+    } catch (error) {
+      next(error);
+    }
+  };
